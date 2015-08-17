@@ -11,6 +11,8 @@
   "dependencies": {
     "body-parser": "^1.12.4",
     "express": "^4.12.4",
-    "mongoose": "3.8.26"
+    "mongoose": "3.8.26",
+    "passport": "^0.2.2",
+    "passport-local": "^1.0.0"
   }
 }

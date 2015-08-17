@@ -94,7 +94,7 @@ app.post('/transaction', function (req, res) {
 
 app.get('/find/:id', function(req, res){
    
-  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate', function (err, user) {
+  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate Trans', function (err, user) {
 
     if (err) return handleError(err);
   
@@ -103,7 +103,8 @@ app.get('/find/:id', function(req, res){
         Last : user.LastName,
         Area : user.Area,
         Group : user.Group,
-        DueDate : user.DueDate      
+        DueDate : user.DueDate,
+        Trans : Array( user.Trans)      
     });
   })
 });
@@ -134,7 +135,7 @@ app.get('/deletegroup/:gid', function(req, res){
 
 app.get('/groupinfo/:id', function(req, res){
   
-    user.find({'Group' : req.params.id  }, 'NIC Name Area DueDate Balance -_id', function (err, users) {
+    user.find({'Group' : req.params.id  }, 'NIC FirstName LastName Area DueDate Balance -_id', function (err, users) {
        res.json(users);
   })
   
