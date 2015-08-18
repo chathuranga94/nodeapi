@@ -108,6 +108,8 @@ app.get('/find/:id', function(req, res){
     res.json({
         First : user.FirstName,
         Last : user.LastName,
+        Balance  :user.Balance,
+        ID : user.NIC,
         Area : user.Area,
         Group : user.Group,
         DueDate : user.DueDate,
@@ -186,9 +188,10 @@ app.get('/group.summary', function(req, res){
   user.aggregate(
         { $group: {
             _id: "$Group",
-            ProductID : "$ProductID",
-            //Products : { $match: "$ProductID"  },
+            productID: { $first: "$ProductID"  },
+            area : { $first : "$Area"  },
             //ProductID : "$ProductID",
+            //Total : { s : "$Area"},
             number : { $sum : 1},
             balance: { $sum: "$Balance"  }
         }}
