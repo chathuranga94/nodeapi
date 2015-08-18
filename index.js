@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var bcrypt = require('bcrypt-nodejs');
 
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); 
@@ -104,7 +105,7 @@ app.get('/find/:id', function(req, res){
         Area : user.Area,
         Group : user.Group,
         DueDate : user.DueDate,
-        Trans : Array( user.Trans)      
+        Trans : user.Trans      
     });
   })
 });
@@ -208,42 +209,94 @@ app.get('/recent', function (req, res) {
 
 ////////////////////////////////////////////////////////////////////////////
 
-var schema2 = mongoose.Schema({
-      ID : { type: Number, index: true },
-      FirstName : String,
-      LastName : String,
-      Description : String,
-      Email : String,
-      Password : String,
+var officerscheme = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  executive : Boolean ,
+  description : String,
+  telephone : Number,
+  firstname : String , 
+  lastname : String,
+  
+  resetPasswordToken: String,
+  resetPasswordExpires: Date
 })
 
-var officer = mongoose.model('officer',schema2);
 
+var officer = mongoose.model('officer',officerscheme);
 
-app.post('/addofficer', function (req, res) {
+app.post('/signup', function (req, res) {
   
-  var add = new officer({
-      ID : parseInt(req.body.id),
-      FirstName : req.body.first,
-      LastName : req.body.last,
-      Description : req.body.dis,
-      Email : req.body.email,
-      Password : req.body.pass,
-  });
+  var x;
+  
+  bcrypt.genSalt(5, function(err, salt) {
+    bcrypt.hash(req.body.pass, salt, null, function(err, hash) { 
+      console.log(hash);
+      x = hash;
+      update();
+    });
+   });
+  
+  
+ function update(){
+      var add = new officer({
+      username : req.body.user,
+      email : req.body.mail,
+      password : x,
+      executive : req.body.status,
+      description : req.body.desc,
+      telephone : req.body.tel,
+      firstname : req.body.first,
+      lastname : req.body.last
+      });
 
-  add.save(function (err) {
-    if (err) // ...
-    console.log('done')
-    res.end('Done')
-  });
+    add.save(function (err) {
+      if (err) // ...
+      console.log('done')
+      res.end('Done')
+    });
+ } 
+ 
 });
 
+////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
+app.post('/login', function (req, res) {
+    var y;
+    var candidatePassword = req.body.pass;
+    var user2 = req.body.user;
+    
+  
+    officer.findOne({'username' : user2  }, 'password -_id', function (err, user1) {
+ 
+     console.log(candidatePassword);
+     console.log(user1.password);  
+     y = user1.password;  
+     update();
+     //res.json(user1);
+     });
+     
+    
+     function update(){
+          console.log(y);
+      
+          bcrypt.compare(candidatePassword, y , function(err, isMatch) {
+                if (err) {  throw (err); }
+                console.log(isMatch);
+                
+                if(isMatch == true){
+                      officer.findOne({'username' : user2  }, 'firstname lastname executive -_id', function (err, user3){
+                          res.json(user3);
+                        }); 
+                } else {   res.end("Error");  }
+                
+                
+                
+           });
+    }   
+});
 
 
 
