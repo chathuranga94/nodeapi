@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var mongoose = require('mongoose');
 //mongoose.connect('mongodb://localhost:27018/final');
-mongoose.connect('mongodb://104.236.206.83:27018/data');
+mongoose.connect('mongodb://104.236.206.83:27018/dat');
 //mongoose.connect('mongodb://admin:aqua@ds051738.mongolab.com:51738/aqua');
     
 
@@ -23,6 +23,9 @@ var schema = mongoose.Schema({
       DueDate : Date,
       Area : String,
       Group : { type: String , index: true },
+      Address : String,
+      Telephone : String,
+      ProductID : String,
       Trans : Array
 })
 
@@ -40,6 +43,9 @@ app.post('/adduser', function (req, res) {
       DueDate : new Date(req.body.date),
       Area : req.body.area,
       Group : req.body.gid,
+      Address : req.body.address ,
+      ProductID : req.body.product , 
+      Telephone : req.body.tel
   });
 
   add.save(function (err) {
@@ -95,7 +101,7 @@ app.post('/transaction', function (req, res) {
 
 app.get('/find/:id', function(req, res){
    
-  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate Trans', function (err, user) {
+  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate Trans Address Telephone ProductID', function (err, user) {
 
     if (err) return handleError(err);
   
@@ -105,6 +111,9 @@ app.get('/find/:id', function(req, res){
         Area : user.Area,
         Group : user.Group,
         DueDate : user.DueDate,
+        Address : user.Address,
+        Telephone : user.Telephone,
+        ProductID : user.ProductID,
         Trans : user.Trans      
     });
   })
@@ -177,6 +186,9 @@ app.get('/group.summary', function(req, res){
   user.aggregate(
         { $group: {
             _id: "$Group",
+            ProductID : "$ProductID",
+            //Products : { $match: "$ProductID"  },
+            //ProductID : "$ProductID",
             number : { $sum : 1},
             balance: { $sum: "$Balance"  }
         }}
@@ -288,16 +300,46 @@ app.post('/login', function (req, res) {
                 
                 if(isMatch == true){
                       officer.findOne({'username' : user2  }, 'firstname lastname executive -_id', function (err, user3){
-                          res.json(user3);
+                          res.json({
+                              LogIn : 1,
+                              First : officer.firstname,
+                              Last : officer.lastname,
+                              Executive : officer.executive  
+                          });
+                        
+                      
                         }); 
-                } else {   res.end("Error");  }
-                
-                
-                
+                } else {   res.json({ LogIn : 0 }); }
+      
            });
     }   
 });
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+var notifi= new mongoose.Schema({
+  Time: Date,
+  Info : String
+})
+
+var notification = mongoose.model('notifi',notifi);
+
+app.post('/createNotifi', function (req, res) {
+  
+    var add = new notification({
+      Time : new Date(req.body.date),
+      Info : req.body.info 
+    });
+  
+    add.save(function (err) {
+      if (err) // ...
+      console.log('done')
+      res.end('Done')
+    });
+});
 
 
 
