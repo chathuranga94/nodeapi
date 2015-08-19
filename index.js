@@ -61,6 +61,7 @@ app.post('/adduser', function (req, res) {
 app.post('/transaction', function (req, res) {
   
      var bal ;
+     var done = 0;
   
     console.log(user.Balance);
     
@@ -72,6 +73,8 @@ app.post('/transaction', function (req, res) {
   
   
   function update(){
+    
+    done = 1;
     
     user.update({ 'NIC' : req.body.id },{
       $set : {
@@ -87,13 +90,15 @@ app.post('/transaction', function (req, res) {
             }
     },function(err, store) {});
     
+    
+    //if(done == 1) {     res.json({ end : done});}
+    
     console.log("f");
     res.json("Done");
      
   } 
     
-    
-     
+    res.json({ end : done});
       
 });
 
@@ -101,23 +106,11 @@ app.post('/transaction', function (req, res) {
 
 app.get('/find/:id', function(req, res){
    
-  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate Trans Address Telephone ProductID', function (err, user) {
+  user.findOne({ 'NIC': req.params.id }, 'NIC FirstName LastName Area  Group DueDate Balance Trans Address Telephone ProductID', function (err, user) {
 
     if (err) return handleError(err);
   
-    res.json({
-        First : user.FirstName,
-        Last : user.LastName,
-        Balance  :user.Balance,
-        ID : user.NIC,
-        Area : user.Area,
-        Group : user.Group,
-        DueDate : user.DueDate,
-        Address : user.Address,
-        Telephone : user.Telephone,
-        ProductID : user.ProductID,
-        Trans : user.Trans      
-    });
+    res.json(user);
   })
 });
 
@@ -140,14 +133,30 @@ app.get('/deletegroup/:gid', function(req, res){
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+app.post('/update/:id', function (req, res) {
+ 
+     user.update({ 'NIC' : req.params.id },{
+              $set : {
+                  FirstName : req.body.first,
+                  LastName : req.body.last,
+                  Balance : parseInt(req.body.amount) ,
+                  DueDate : new Date(req.body.date),
+                  Area : req.body.area,
+                  Group : req.body.gid,
+                  Address : req.body.address ,
+                  ProductID : req.body.product , 
+                  Telephone : req.body.tel
+               }        
+     },function(err, store) {});
+  
+});
 
-///////////////////UPDATE / edit
 
 /////////////////////////////////////////////////////////////////////////////////////
 
 app.get('/groupinfo/:id', function(req, res){
   
-    user.find({'Group' : req.params.id  }, 'NIC FirstName LastName Area DueDate Balance -_id', function (err, users) {
+    user.find({'Group' : req.params.id  }, 'NIC FirstName LastName ProductID Area DueDate Balance -_id', function (err, users) {
        res.json(users);
   })
   
@@ -159,7 +168,7 @@ app.get('/groupinfo/:id', function(req, res){
 
 app.get('/users', function(req, res){
    
-  user.find({}, 'NIC Name Area DueDate Balance -_id', function (err, users) {     
+  user.find({}, 'NIC FirstName LastName Area DueDate Balance -_id', function (err, users) {     
    res.json(users);
    
   })
@@ -190,8 +199,6 @@ app.get('/group.summary', function(req, res){
             _id: "$Group",
             productID: { $first: "$ProductID"  },
             area : { $first : "$Area"  },
-            //ProductID : "$ProductID",
-            //Total : { s : "$Area"},
             number : { $sum : 1},
             balance: { $sum: "$Balance"  }
         }}
@@ -343,17 +350,6 @@ app.post('/createNotifi', function (req, res) {
       res.end('Done')
     });
 });
-
-
-
-
-
-
-
-
-
-
-
 
 
 
