@@ -59,27 +59,21 @@ app.post('/adduser', function (req, res) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 app.post('/transaction', function (req, res) {
-  
      var bal ;
-     var done = 0;
-  
-    console.log(user.Balance);
     
     user.findOne({ 'NIC': req.body.id }, 'DueDate Balance', function (err, user) {
-      bal = user.Balance;
+      if(!user){ res.json({ end : 0 }); }
+      else{bal = user.Balance;
       bal = bal - req.body.amount;
       update();
-    });
-  
+      res.json({ end : 1 });}
+    });  
   
   function update(){
-    
-    done = 1;
-    
     user.update({ 'NIC' : req.body.id },{
       $set : {
           DueDate : new Date(req.body.due),
-          Balance : bal,
+          Balance : bal - req.body.amount,
       },
       $push: {
           'Trans': {
@@ -87,18 +81,10 @@ app.post('/transaction', function (req, res) {
                 date: new Date( req.body.date ),
                 officer : req.body.code  
                    }
-            }
+             }
     },function(err, store) {});
-    
-    
-    //if(done == 1) {     res.json({ end : done});}
-    
-    console.log("f");
-    res.json("Done");
-     
-  } 
-    
-    res.json({ end : done});
+       
+  }     
       
 });
 
@@ -339,8 +325,13 @@ var notification = mongoose.model('notifi',notifi);
 
 app.post('/createNotifi', function (req, res) {
   
+    var current = new Date();
+    current.setHours(current.getHours() + 6);
+    
+     
     var add = new notification({
-      Time : new Date(req.body.date),
+      //num : {type: Number, unique: true},
+      Time : current,
       Info : req.body.info 
     });
   
@@ -350,6 +341,17 @@ app.post('/createNotifi', function (req, res) {
       res.end('Done')
     });
 });
+
+
+
+app.get('/getNotifi', function(req, res){
+  
+  notification.find({}, 'Time Info -_id', function (err, notifi) {     
+   res.json(notifi);})
+
+  
+});
+
 
 
 
