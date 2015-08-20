@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var mongoose = require('mongoose');
 //mongoose.connect('mongodb://localhost:27018/final');
-mongoose.connect('mongodb://104.236.206.83:27018/dat');
+mongoose.connect('mongodb://104.236.206.83:27018/present');
 //mongoose.connect('mongodb://admin:aqua@ds051738.mongolab.com:51738/aqua');
     
 
@@ -63,7 +63,8 @@ app.post('/transaction', function (req, res) {
     
     user.findOne({ 'NIC': req.body.id }, 'DueDate Balance', function (err, user) {
       if(!user){ res.json({ end : 0 }); }
-      else{bal = user.Balance;
+      else{
+      bal = user.Balance;
       bal = bal - req.body.amount;
       update();
       res.json({ end : 1 });}
@@ -73,7 +74,7 @@ app.post('/transaction', function (req, res) {
     user.update({ 'NIC' : req.body.id },{
       $set : {
           DueDate : new Date(req.body.due),
-          Balance : bal - req.body.amount,
+          Balance : bal ,
       },
       $push: {
           'Trans': {
@@ -349,7 +350,21 @@ app.get('/getNotifi', function(req, res){
   notification.find({}, 'Time Info -_id', function (err, notifi) {     
    res.json(notifi);})
 
-  
+});
+
+
+
+
+
+app.get('/sample', function(req, res){
+    var v = 0;
+    var x = 1;
+    
+    if(v==0){
+            if(x==1){   res.end("sfa") ; }
+            else {console.log("fasaf");}  
+    }
+
 });
 
 
